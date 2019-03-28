@@ -17,11 +17,11 @@
 
 #include "common/cs_dbg.h"
 
-#include "mgos_app.h"
-#include "mgos.h"
-#include "mongoose.h"
-#include "mgos_http_server.h"
+//#include "mgos.h"
+//#include "mongoose.h"
+//#include "mgos_http_server.h"
 
+#include "mgos_app.h"
 #include "mgos_neopixel.h"
 #include "mgos_timers.h"
 
@@ -32,10 +32,10 @@
 #define PIXEL 0
 #define ORDER MGOS_NEOPIXEL_ORDER_RGB
 
-struct mg_connection *server = NULL; 
+//struct mg_connection *server = NULL; 
 
 struct mgos_neopixel *s_strip = NULL;
-
+/*
 static void set_pixel(int r, int g, int b) {
   int pixel = 0;
   r = 0;
@@ -46,7 +46,22 @@ static void set_pixel(int r, int g, int b) {
   mgos_neopixel_show(s_strip);
   LOG(LL_INFO, ("%3d %3d %3d %3d", pixel, r, g, b));
 }
+*/
 
+static void pixel_timer_cb(void *arg) {
+  static int s_cnt = 0;
+  int pixel = (s_cnt++) % NUM_PIXELS;
+  int r = s_cnt % 255, g = (s_cnt * 2) % 255, b = s_cnt * s_cnt % 255;
+  r = 0;
+  g = 5;
+  b = 0;
+  mgos_neopixel_clear(s_strip);
+  mgos_neopixel_set(s_strip, pixel, r, g, b);
+  mgos_neopixel_show(s_strip);
+  LOG(LL_INFO, ("%3d %3d %3d %3d", pixel, r, g, b));
+  (void) arg;
+}
+/*
 static void light_handler(struct mg_connection *server, int ev, void *p,
                         void *user_data) {
   (void) p;
@@ -81,7 +96,7 @@ static void light_handler(struct mg_connection *server, int ev, void *p,
   sscanf(acBlue, "%d", &nBlue);
   LOG(LL_INFO, ("Parameter converted to int (r:%d), (g:%d), (b:%d)", nRed, nGreen, nBlue));
 
-  set_pixel(nRed, nGreen, nBlue);
+  //set_pixel(nRed, nGreen, nBlue);
 
   mg_send_response_line(server, 200,
                         "Content-Type: text/html\r\n");
@@ -90,30 +105,24 @@ static void light_handler(struct mg_connection *server, int ev, void *p,
   server->flags |= (MG_F_SEND_AND_CLOSE);
   (void) user_data;
 }
-
+*/
 enum mgos_app_init_result mgos_app_init(void) {
-  LOG(LL_INFO, ("Hi there"));
-  
   /// Initialize neopixel
   LOG(LL_INFO, ("Initialize neopixel"));
   s_strip = mgos_neopixel_create(PIN, NUM_PIXELS, ORDER);
-  if (s_strip)
-  {
-      LOG(LL_INFO, ("Neopixel initialized"));
-      int pixel = 0;
-      int r = 0;
-      int g = 0;
-      int b = 0;
-      //set_pixel(r, g, b);
-      mgos_neopixel_clear(s_strip);
-      mgos_neopixel_set(s_strip, pixel, r, g, b);
-      mgos_neopixel_show(s_strip);
 
-  } 
-  else
-  {
-      LOG(LL_INFO, ("Neopixel not initialized"));
-  }
+  LOG(LL_INFO, ("Neopixel initialized"));
+  //int pixel = 0;
+  //int r = 0;
+  //int g = 0;
+  //int b = 0;
+  //set_pixel(r, g, b);
+  //mgos_neopixel_clear(s_strip);
+  //mgos_neopixel_set(s_strip, pixel, r, g, b);
+  //mgos_neopixel_show(s_strip);
+
+
+  mgos_set_timer(150 /* ms */, MGOS_TIMER_REPEAT, pixel_timer_cb, NULL);
   
   /// Setting up http server
   LOG(LL_INFO, ("Setting up http server"));
