@@ -17,6 +17,7 @@
 
 #include "common/cs_dbg.h"
 
+#include "mgos_app.h"
 #include "mgos.h"
 #include "mongoose.h"
 #include "mgos_http_server.h"
@@ -24,7 +25,7 @@
 #include "mgos_neopixel.h"
 #include "mgos_timers.h"
 
-#include <stdio.h> // Included already -> could be omitted
+//#include <stdio.h> // Included already -> could be omitted
 
 #define PIN 4
 #define NUM_PIXELS 1
@@ -37,6 +38,9 @@ struct mgos_neopixel *s_strip = NULL;
 
 static void set_pixel(int r, int g, int b) {
   int pixel = 0;
+  r = 0;
+  g = 0;
+  b = 1;
   mgos_neopixel_clear(s_strip);
   mgos_neopixel_set(s_strip, pixel, r, g, b);
   mgos_neopixel_show(s_strip);
@@ -89,29 +93,36 @@ static void light_handler(struct mg_connection *server, int ev, void *p,
 
 enum mgos_app_init_result mgos_app_init(void) {
   LOG(LL_INFO, ("Hi there"));
-
-  /// Setting up http server
-  LOG(LL_INFO, ("Setting up http server"));
-  server = mgos_get_sys_http_server();
-
-  /// Set endpoints
-  mgos_register_http_endpoint("/light", light_handler, NULL);
-
+  
   /// Initialize neopixel
   LOG(LL_INFO, ("Initialize neopixel"));
   s_strip = mgos_neopixel_create(PIN, NUM_PIXELS, ORDER);
   if (s_strip)
   {
-      LOG(LL_INFO, ("Neopixel initialized, setting color 255, 255, 0"));
+      LOG(LL_INFO, ("Neopixel initialized"));
+      int pixel = 0;
       int r = 0;
-      int g = 255;
-      int b = 255;
-      set_pixel(r, g, b);
+      int g = 0;
+      int b = 0;
+      //set_pixel(r, g, b);
+      mgos_neopixel_clear(s_strip);
+      mgos_neopixel_set(s_strip, pixel, r, g, b);
+      mgos_neopixel_show(s_strip);
+
   } 
   else
   {
       LOG(LL_INFO, ("Neopixel not initialized"));
   }
+  
+  /// Setting up http server
+  LOG(LL_INFO, ("Setting up http server"));
+  //server = mgos_get_sys_http_server();
+
+  /// Set endpoints
+  //mgos_register_http_endpoint("/light", light_handler, NULL);
+
+  
 
   return MGOS_APP_INIT_SUCCESS;
 }
